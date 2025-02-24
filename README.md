@@ -1,10 +1,10 @@
-# RiverChaos
+# MeanderChaos
 
 ![Meandering River Simulation](https://github.com/braydennoh/RiverChaos/blob/main/Figures/1.gif)
 
 ## Overview
 
-**RiverChaos** is a numerical model that explores the chaotic behavior of meandering rivers. The model is based on deterministic geometric meandering equations and investigates whether river meandering exhibits characteristics of deterministic chaos. Specifically, this project examines:
+**MeanderChaos** is a numerical model that explores the chaotic behavior of meandering rivers. The model is based on deterministic geometric meandering equations and investigates whether river meandering exhibits characteristics of deterministic chaos. Specifically, this project examines:
 
 - **Boundedness** of meandering systems  
 - **Sensitivity to initial conditions**  
