@@ -11,3 +11,5 @@
 - **The role of cutoffs** in chaotic behavior  
 
 This repository contains the source code, figures, and analyses based on an ongoing research project.
+
+![Chaotic River Behavior](https://github.com/braydennoh/RiverChaos/blob/main/Figures/chaos1.png)
