@@ -12,12 +12,10 @@ By comparing paired simulations with identical settings—once with cutoffs enab
 Let each planform at time t be rasterized to a binary occupancy field S(t) ∈ {0,1}^{N_x×N_y}, 
 and let S*(t) be the paired run. Define the separation
 
-    d(t) = || S*(t) – S(t) ||_2
-
+![d(t)](https://latex.codecogs.com/svg.latex?d(t)=\|\mathbf{S}^*(t)-\mathbf{S}(t)\|_2)
 The finite-time Lyapunov exponent over a linear-growth window [t1, t2] is
 
-    λ_FT(t1,t2) = (1 / (t2 – t1)) * ln( d(t2) / d(t1) ),   with t0 ≤ t1 < t2
-
+![Lyapunov](https://latex.codecogs.com/svg.latex?\lambda_{\mathrm{FT}}(t_1,t_2)=\frac{1}{t_2-t_1}\ln\left(\frac{d(t_2)}{d(t_1)}\right))
 
 ## Key Result
 With all else held constant, **enabling cutoffs yields positive finite-time Lyapunov exponents (FTLEs)**; disabling cutoffs eliminates measurable growth. The growth rate:
