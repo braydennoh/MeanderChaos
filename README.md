@@ -1,8 +1,7 @@
-# MeanderChaos
+## MeanderChaos
 
 ![PNAS Supplementary Animation](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/PNAS_Supp.gif)
 
-## Overview
 River meanders evolve smoothly most of the time, but **neck cutoffs** abruptly change planform topology. In this repo we test a simple question inside a deterministic geometric model: **Are cutoffs alone sufficient to produce sensitive dependence on initial conditions (chaos)?**  
 By comparing paired simulations with identical settings—once with cutoffs **enabled** and once with cutoffs **disabled**—we show that only the cutoff-enabled runs develop sustained exponential divergence on a fixed-dimension Eulerian grid.
 
