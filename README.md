@@ -17,7 +17,7 @@ $$
 d(t) = \left\| \mathbf{S}^\ast(t) - \mathbf{S}(t) \right\|_2
 $$
 
-The finite-time Lyapunov exponent over a linear-growth window \([t_1,t_2]\) is
+The finite-time Lyapunov exponent over a linear-growth window $[t_1,t_2]$ is
 
 $$
 \lambda_{\mathrm{FT}}(t_1,t_2) =
