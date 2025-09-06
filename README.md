@@ -9,16 +9,15 @@ By comparing paired simulations with identical settings—once with cutoffs enab
 
 ### lyapunov on a fixed eulerian grid
 
-Let each planform at time t be rasterized to a binary occupancy field \(\mathbf{S}(t)\in\{0,1\}^{N_x\times N_y}\), and let \(\mathbf{S}^\ast(t)\) be the paired run. Define the separation
-\[
-d(t)=\big\|\mathbf{S}^\ast(t)-\mathbf{S}(t)\big\|_2 .
-\]
-The finite-time Lyapunov exponent over a linear-growth window \([t_1,t_2]\) is
-\[
-\lambda_{\mathrm{FT}}(t_1,t_2)
-=\frac{1}{t_2-t_1}\,\ln\!\left(\frac{d(t_2)}{d(t_1)}\right),
-\qquad t_0\le t_1<t_2 .
-\]
+Let each planform at time t be rasterized to a binary occupancy field S(t) ∈ {0,1}^{N_x×N_y}, 
+and let S*(t) be the paired run. Define the separation
+
+    d(t) = || S*(t) – S(t) ||_2
+
+The finite-time Lyapunov exponent over a linear-growth window [t1, t2] is
+
+    λ_FT(t1,t2) = (1 / (t2 – t1)) * ln( d(t2) / d(t1) ),   with t0 ≤ t1 < t2
+
 
 ## Key Result
 With all else held constant, **enabling cutoffs yields positive finite-time Lyapunov exponents (FTLEs)**; disabling cutoffs eliminates measurable growth. The growth rate:
