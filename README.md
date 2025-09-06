@@ -22,7 +22,7 @@ The finite-time Lyapunov exponent over a linear-growth window \([t_1,t_2]\) is
 $$
 \lambda_{\mathrm{FT}}(t_1,t_2) =
 \frac{1}{t_2 - t_1}
-\ln\!\left(\frac{d(t_2)}{d(t_1)}\right),
+\ln\left(\frac{d(t_2)}{d(t_1)}\right),
 \quad t_0 \leq t_1 < t_2
 $$
 
