@@ -54,6 +54,6 @@ Below is a high-level description of the main steps:
 
 6. **Separation metrics**  
    - Compute the binary-grid separation $d(t)$ between channels through time.  
-   - Plot the log separation $\ln d(t)$ to estimate finite-time Lyapunov exponents.  
+   - Plot the log separation $\ln\,d(t)$ to estimate finite-time Lyapunov exponents.  
 
 The notebook contains all functions and plotting routines for reproducing the figures and analyses in the manuscript.
