@@ -10,7 +10,7 @@ By comparing paired simulations with identical settings—once with cutoffs enab
 ### lyapunov on a fixed eulerian grid
 
 Let each planform at time t be rasterized to a binary occupancy field  
-\(\mathbf{S}(t) \in \{0,1\}^{N_x \times N_y}\), and let \(\mathbf{S}^\ast(t)\) be the paired run.  
+$\mathbf{S}(t) \in \{0,1\}^{N_x \times N_y}$, and let $\mathbf{S}^\ast(t)$ be the paired run.
 The separation is
 
 $$
