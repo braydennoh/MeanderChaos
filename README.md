@@ -1,5 +1,7 @@
 ## MeanderChaos
 
+![PNAS Supplementary Animation](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/1.gif)
+
 River meanders evolve smoothly most of the time, but neck cutoffs abruptly change planform topology. We test a simple question inside a deterministic geometric model: are cutoffs alone sufficient to produce sensitive dependence on initial conditions (chaos)?
 
 ![PNAS Supplementary Animation](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/PNAS_Supp.gif)
