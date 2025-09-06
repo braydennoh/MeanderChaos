@@ -44,16 +44,16 @@ Below is a high-level description of the main steps:
    - Overlay binary occupancy fields to highlight overlap and divergence.
 
 4. **Simulation with meanderpy**  
-   - Run both channels forward using curvature-driven migration with lateral migration coefficient \(k_\ell\).  
-   - Toggle the cutoff threshold \(d_c\) to enable or disable neck cutoffs.  
-   - Store centerline geometry at each timestep.
+   - Run both channels forward using curvature-driven migration with lateral migration coefficient $k_\ell$.  
+   - Toggle the cutoff threshold $d_c$ to enable or disable neck cutoffs.  
+   - Store centerline geometry at each timestep.  
 
 5. **Visualization**  
    - Plot Lagrangian centerlines for reference and perturbed runs at selected timesteps.  
    - Plot Eulerian occupancy overlays (red = reference only, blue = perturbed only, purple = overlap).  
 
 6. **Separation metrics**  
-   - Compute the binary-grid separation \(d(t)\) between channels through time.  
-   - Plot the log separation \(\ln d(t)\) to estimate finite-time Lyapunov exponents.  
+   - Compute the binary-grid separation $d(t)$ between channels through time.  
+   - Plot the log separation $\ln d(t)$ to estimate finite-time Lyapunov exponents.  
 
 The notebook contains all functions and plotting routines for reproducing the figures and analyses in the manuscript.
