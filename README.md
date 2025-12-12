@@ -119,7 +119,7 @@ We visualize the temporal evolution of the channel centerline. The red line indi
 
 ### 3. Eulerian Grid Analysis
 
-To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we **rasterize** the channels onto a fixed Eulerian grid.
+To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we rasterize the channels onto a fixed Eulerian grid.
 
 We define a binary occupancy grid $G(x,y)$ where:
 
@@ -153,7 +153,7 @@ G2 = rasterize_channel(chb_pert.channels[t_idx], ...)
 
 #### Spatial Overlap Visualization
 
-The figure below demonstrates the overlap. **Purple** indicates agreement, while **Red** and **Blue** indicate the spatial divergence of the two simulations.
+The figure below demonstrates the overlap. Purple cells indicates agreement, while red and blue cells indicate the spatial divergence of the two simulations.
 
 <p align="center">
   <img src="Supplement/eulerian.png" width="100%" alt="Eulerian">
@@ -163,7 +163,7 @@ The figure below demonstrates the overlap. **Purple** indicates agreement, while
 
 ### 4\. Hamming Distance Quantification
 
-We measure the error growth using the **Hamming Distance** ($d_H$), defined as the count of grid cells where the occupancy states differ:
+We measure the error growth using the Hamming Distance ($d_H$), defined as the count of grid cells where the occupancy states differ:
 
 $$
 d_H(t) = \sum_{i,j} | G_{ref}(t)_{i,j} - G_{pert}(t)_{i,j} |
