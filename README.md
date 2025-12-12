@@ -2,7 +2,7 @@
 
 ![Gif](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/1.gif)
 
-River meanders evolve smoothly most of the time, but neck cutoffs abruptly change planform topology. We test a simple question inside a deterministic geometric model: are cutoffs alone sufficient to produce sensitive dependence on initial conditions (chaos)?
+River meanders evolve through smooth curvature-driven migration punctuated by abrupt cutoff events that reorganize planform topology. Within a fully deterministic kinematic model, we ask whether these cutoff events alone are sufficient to generate sensitive dependence on initial conditions—manifested as sustained exponential divergence—when all other sources of stochasticity and physical complexity are excluded. 
 
 ## Usage
 This repository uses [`meanderpy`](https://github.com/zsylvester/meanderpy) to simulate river planform evolution from infinitesimally perturbed initial conditions. Each evolving centerline is rasterized onto a fixed Eulerian grid, enabling the computation of Hamming distance between binary occupancy fields as a measure of divergence.
