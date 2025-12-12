@@ -109,6 +109,10 @@ chb_pert = run_sim(MAG, CRDIST)
 
 We visualize the temporal evolution of the channel centerline. The red line indicates the final state of the unperturbed channel.
 
+<p align="center">
+  <img src="Supplement/lagrangian.png" width="600" alt="Lagrangian">
+</p>
+
 -----
 
 ## 3. Eulerian Grid Analysis
