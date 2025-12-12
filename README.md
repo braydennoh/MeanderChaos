@@ -111,14 +111,17 @@ We visualize the temporal evolution of the channel centerline. The red line indi
 
 -----
 
-## 3\. Eulerian Grid Analysis
+## 3. Eulerian Grid Analysis
 
 To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we **rasterize** the channels onto a fixed Eulerian grid.
 
 We define a binary occupancy grid $G(x,y)$ where:
 
 $$
-G_{i,j} = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \\ 0 & \text{otherwise} \end{cases}
+G_{i,j} = \begin{cases} 
+1 & \text{if channel occupies cell } (i,j) \\ 
+0 & \text{otherwise} 
+\end{cases}
 $$
 
 ```python
