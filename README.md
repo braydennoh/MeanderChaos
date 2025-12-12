@@ -27,15 +27,10 @@ $$
 \ln\left(\frac{d(t_2)}{d(t_1)}\right),
 \quad t_0 \leq t_1 < t_2
 $$
-Here is an elegant, structured GitHub README format for your tutorial. I have organized it into logical sections (Physics, Simulation, Analysis), used LaTeX for the mathematical descriptions, and inserted placeholders for your figures.
 
------
 
-# MeanderPy Perturbation & Eulerian Analysis
-
-This repository contains a tutorial framework for simulating river meander migration and quantifying the chaotic divergence between a reference channel and a perturbed channel over time.
-
-Using `meanderpy`, we simulate the planform evolution of a river and apply a localized perturbation to the initial conditions. We then employ an **Eulerian grid analysis** to rasterize the channel centerlines and compute the Hamming distance between the two simulations, effectively tracking the "Butterfly Effect" in geomorphic evolution.
+# Usage
+Using `meanderpy`, we simulate the planform evolution of a river and apply a localized perturbation to the initial conditions. We then employ an **Eulerian grid analysis** to rasterize the channel centerlines and compute the Hamming distance between the two simulations.
 
 ## Dependencies
 
@@ -84,7 +79,9 @@ dt = DT_YEARS * SECONDS_PER_YEAR
 
 The `run_sim` function initializes a sine-generated curve parameterized by the angle $\theta(s)$:
 
-$$\theta(s) = \theta_0 \sin\left(\frac{2\pi s}{\lambda}\right)$$
+$$
+\theta(s) = \theta_0 \sin\left(\frac{2\pi s}{\lambda}\right)
+$$
 
 We run two instances:
 
@@ -144,7 +141,10 @@ We visualize the temporal evolution of the channel centerline. The red line indi
 To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we **rasterize** the channels onto a fixed Eulerian grid.
 
 We define a binary occupancy grid $G(x,y)$ where:
-$$G_{i,j} = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \\ 0 & \text{otherwise} \end{cases}$$
+
+$$
+G_{i,j} = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \\ 0 & \text{otherwise} \end{cases}
+$$
 
 ```python
 def rasterize_channel(ch, rows, cols, xmin, ymin, cell_size):
@@ -177,7 +177,9 @@ The figure below demonstrates the overlap. **Purple** indicates agreement, while
 
 We measure the error growth using the **Hamming Distance** ($d_H$), defined as the count of grid cells where the occupancy states differ:
 
-$$d_H(t) = \sum_{i,j} | G_{ref}(t)_{i,j} - G_{pert}(t)_{i,j} |$$
+$$
+d_H(t) = \sum_{i,j} | G_{ref}(t)_{i,j} - G_{pert}(t)_{i,j} |
+$$
 
 The code calculates $\log(d_H)$ to analyze the exponential divergence typical of chaotic systems.
 
