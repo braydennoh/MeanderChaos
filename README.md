@@ -5,7 +5,9 @@
 River meanders evolve smoothly most of the time, but neck cutoffs abruptly change planform topology. We test a simple question inside a deterministic geometric model: are cutoffs alone sufficient to produce sensitive dependence on initial conditions (chaos)?
 
 ## Usage
-Using `meanderpy`, we simulate the planform evolution of a river and apply a localized perturbation to the initial conditions. We then employ an **Eulerian grid analysis** to rasterize the channel centerlines and compute the Hamming distance between the two simulations.
+This repository uses [`meanderpy`](https://github.com/zsylvester/meanderpy) to simulate river planform evolution from infinitesimally perturbed initial conditions. Each evolving centerline is rasterized onto a fixed Eulerian grid, enabling the computation of Hamming distance between binary occupancy fields as a measure of divergence.
+
+
 
 ### Dependencies
 
