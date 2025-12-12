@@ -184,7 +184,9 @@ log_norms = np.array([
 
 The plot below shows the Log-Hamming distance over time. A linear trend in this semi-log plot would suggest exponential growth of the initial perturbation.
 
-
+<p align="center">
+  <img src="Supplement/hamming.png" width="600" alt="Hamming Distance Plot">
+</p>
 
 
 
