@@ -50,7 +50,7 @@ dt = DT_YEARS * SECONDS_PER_YEAR
 
 -----
 
-## 2\. Running the Simulation
+### 2\. Running the Simulation
 
 The `run_sim` function initializes a sine-generated curve parameterized by the angle $\theta(s)$:
 
@@ -115,7 +115,7 @@ We visualize the temporal evolution of the channel centerline. The red line indi
 
 -----
 
-## 3. Eulerian Grid Analysis
+### 3. Eulerian Grid Analysis
 
 To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we **rasterize** the channels onto a fixed Eulerian grid.
 
@@ -159,7 +159,7 @@ The figure below demonstrates the overlap. **Purple** indicates agreement, while
 
 -----
 
-## 4\. Hamming Distance Quantification
+### 4\. Hamming Distance Quantification
 
 We measure the error growth using the **Hamming Distance** ($d_H$), defined as the count of grid cells where the occupancy states differ:
 
