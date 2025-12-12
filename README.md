@@ -7,7 +7,7 @@ River meanders evolve smoothly most of the time, but neck cutoffs abruptly chang
 ## Usage
 Using `meanderpy`, we simulate the planform evolution of a river and apply a localized perturbation to the initial conditions. We then employ an **Eulerian grid analysis** to rasterize the channel centerlines and compute the Hamming distance between the two simulations.
 
-## Dependencies
+### Dependencies
 
 Ensure you have the following libraries installed:
 
@@ -20,7 +20,7 @@ import cmocean
 
 -----
 
-## 1\. Simulation Setup
+### 1\. Simulation Setup
 
 We define the physical constants governing the river migration. The simulation uses a constant flow depth and friction factor. The migration rate is determined by the lateral migration scale $k_l$ and vertical scale $k_v$.
 
