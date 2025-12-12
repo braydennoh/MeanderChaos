@@ -105,7 +105,7 @@ chb_ref = run_sim(0.0, CRDIST)
 chb_pert = run_sim(MAG, CRDIST)
 ```
 
-### Visualizing Channel Evolution
+#### Visualizing Channel Evolution
 
 We visualize the temporal evolution of the channel centerline. The red line indicates the final state of the unperturbed channel.
 
@@ -149,7 +149,7 @@ G1 = rasterize_channel(chb_ref.channels[t_idx], ...)
 G2 = rasterize_channel(chb_pert.channels[t_idx], ...)
 ```
 
-### Spatial Overlap Visualization
+#### Spatial Overlap Visualization
 
 The figure below demonstrates the overlap. **Purple** indicates agreement, while **Red** and **Blue** indicate the spatial divergence of the two simulations.
 
@@ -188,7 +188,7 @@ log_norms = np.array([
 ])
 ```
 
-### Divergence Plot
+#### Divergence Plot
 
 The plot below shows the Log-Hamming distance over time. A linear trend in this semi-log plot would suggest exponential growth of the initial perturbation.
 
