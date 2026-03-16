@@ -74,11 +74,11 @@ G1 = rasterize_channel(chb_ref.channels[t_idx])   # Reference occupancy
 G2 = rasterize_channel(chb_pert.channels[t_idx])   # Perturbed occupancy
 ```
 
-Visualizing the overlap — purple: shared cells, red: reference only, blue: perturbed only:
-
 <p align="center">
-  <img src="figures/eulerian.png" width="80%" alt="Eulerian grid comparison">
+  <img src="figures/fig1.png" width="95%" alt="Lagrangian and Eulerian representations">
 </p>
+
+> **Fig. 1.** Lagrangian ensemble of 100 realizations (a), and Eulerian representation on grids with resolutions of 10 m (b), 50 m (c), and 100 m (d).
 
 ---
 
@@ -130,7 +130,7 @@ MeanderChaos/
     │   ├── figure3code.py
     │   ├── figure4code.py
     │   └── figure5code.py
-    ├── eulerian.png
+    ├── fig1.png
     └── hamming.png
 ```
 
