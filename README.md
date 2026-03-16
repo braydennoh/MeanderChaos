@@ -150,12 +150,13 @@ MeanderChaos/
 ## Citation
 
 ```bibtex
-@article{noh2025cutoffs,
-  title   = {Cutoffs as a sufficient condition for chaos in kinematic
-             river channel evolution},
-  author  = {Noh, Brayden and Wani, Omar},
-  journal = {Communications Earth \& Environment},
-  year    = {2025}
+@article{noh2026cutoffs,
+  title     = {Cutoffs as a sufficient condition for chaos in kinematic
+               river channel evolution},
+  author    = {Noh, Brayden and Wani, Omar},
+  journal   = {Communications Earth \& Environment},
+  year      = {2026},
+  publisher = {Nature Publishing Group}
 }
 ```
 
