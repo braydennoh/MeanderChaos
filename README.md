@@ -45,7 +45,7 @@ unew = np.linspace(0, 1, 1 + int(round(s[-1]/deltas)))
 out = scipy.interpolate.splev(unew, tck)
 ```
 
-The `s=0` forces exact interpolation. The `round()` in the node count means an infinitesimal perturbation in arc length can change $n$ by one, shifting every node index downstream. This is not a bug, but it contaminates any Lagrangian distance metric.
+The `s=0` forces exact interpolation. The `round()` in the node count means an infinitesimal perturbation in arc length can change $n$ by one, shifting every node index downstream. The geometry is preserved exactly, but the node indexing is not — which is why a Lagrangian distance metric requires care.
 
 ## The variable-dimensionality problem
 
