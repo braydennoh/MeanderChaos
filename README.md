@@ -83,6 +83,10 @@ The continuous phase (curvature-driven migration) is smooth and non-chaotic on i
 
 This is the threshold-reset mechanism found in impact oscillators and other hybrid continuous-discrete systems. The continuous dynamics provide stretching; the discrete events provide folding.
 
+<p align="center">
+  <img src="figures/meander_evolution.gif" width="100%">
+</p>
+
 ## Counterfactual experiment
 
 The test is a single binary switch: cutoffs on or off. With cutoffs disabled, paired trajectories remain coincident ($d_H = 0$). With cutoffs enabled, $\ln d_H$ grows linearly, yielding a positive finite-time Lyapunov exponent:
