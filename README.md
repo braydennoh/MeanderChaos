@@ -2,7 +2,7 @@
 
 **Cutoffs as a sufficient condition for chaos in kinematic river channel evolution**
 
-Noh, B. & Wani, O. (2025). *Communications Earth & Environment*.
+Noh, B. & Wani, O. (2026). *Communications Earth & Environment*.
 
 ## Overview
 
