@@ -2,19 +2,58 @@
 
 Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition for chaos in kinematic river channel evolution. *Communications Earth & Environment*.
 
-## The variable-dimensionality problem
+## The model
 
-The Howard-Knutson kinematic model represents a river as a Lagrangian centerline of $n$ nodes that migrate normal to the local tangent at a rate determined by curvature and an upstream-weighted convolution. After each migration step, the centerline is resampled to uniform spacing:
+[meanderpy](https://github.com/zsylvester/meanderpy) implements the Howard & Knutson (1984) kinematic meander model. At each timestep, three operations are applied to a Lagrangian centerline of $n$ nodes:
+
+Migration. The nominal rate is proportional to dimensionless curvature, $R_0 = k_\ell W \kappa$. The adjusted rate is a weighted sum of upstream curvatures via an exponential convolution kernel $G = e^{-\alpha s}$:
 
 ```python
-unew = np.linspace(0, 1, 1 + int(round(s[-1] / deltas)))
+for i in range(pad1, ns-pad):
+    si2 = np.hstack((np.array([0]), np.cumsum(ds[i-1::-1])))
+    G = np.exp(-alpha * si2)
+    R1[i] = omega*R0[i] + gamma*np.sum(R0[i::-1]*G) / np.sum(G)
 ```
 
-The `round()` means an infinitesimal perturbation in arc length can change $n$ by one. In Lagrangian coordinates, this shifts every node index downstream, injecting a spurious $O(1)$ divergence that has nothing to do with geometry. Any chaos diagnostic built on node-to-node comparison is contaminated by this artifact.
+Nodes then move normal to the local tangent: `x += R1 * dy/ds * dt`, `y -= R1 * dx/ds * dt`.
+
+Cutoff detection. A pairwise distance matrix is computed via `scipy.spatial.distance.cdist`. Pairs within the diagonal band (adjacent nodes) are masked. The first pair satisfying $\|x_i - x_j\| < d_c$ in row-major order is selected:
+
+```python
+dist = distance.cdist(np.array([x,y]).T, np.array([x,y]).T)
+dist[dist > crdist] = np.NaN
+for k in range(-diag_blank_width, diag_blank_width+1):
+    rows, cols = kth_diag_indices(dist, k)
+    dist[rows, cols] = np.NaN
+i1, i2 = np.where(~np.isnan(dist))
+```
+
+No random tie-breakers. `np.where` traverses in row-major order deterministically.
+
+Topological surgery. The oxbow is removed by array splicing:
+
+```python
+x = np.hstack((x[:ind1[0]+1], x[ind2[0]:]))
+y = np.hstack((y[:ind1[0]+1], y[ind2[0]:]))
+```
+
+Resampling. After cutoff, the centerline is resampled to uniform spacing using a cubic B-spline with zero smoothing:
+
+```python
+tck, u = scipy.interpolate.splprep([x,y,z], s=0)
+unew = np.linspace(0, 1, 1 + int(round(s[-1]/deltas)))
+out = scipy.interpolate.splev(unew, tck)
+```
+
+The `s=0` forces exact interpolation. The `round()` in the node count means an infinitesimal perturbation in arc length can change $n$ by one, shifting every node index downstream. This is not a bug, but it contaminates any Lagrangian distance metric.
+
+## The variable-dimensionality problem
+
+In Lagrangian coordinates, comparing two centerlines node-by-node is meaningless when they have different $n$. Even when $n$ happens to match, the resampling-induced index shift creates $O(1)$ spurious divergence that has nothing to do with geometry. Any chaos diagnostic built on $\|x^*_i - x_i\|$ is contaminated by this artifact.
 
 ## Eulerian state representation
 
-We sidestep variable dimensionality by projecting the Lagrangian centerline onto a fixed Eulerian binary grid. The state becomes a matrix $S_{k\ell}(t) \in \{0,1\}$ of constant dimension, independent of how many nodes parameterize the curve:
+We project the Lagrangian centerline onto a fixed binary grid $S_{k\ell}(t) \in \{0,1\}$ of constant dimension. A curve with 1000 nodes and the same curve with 1001 nodes occupy identical grid cells:
 
 ```python
 def rasterize_channel(ch):
@@ -28,67 +67,35 @@ def rasterize_channel(ch):
     return g
 ```
 
-A curve with 1000 nodes and the same curve with 1001 nodes occupy identical grid cells. The Hamming distance $d_H(t) = \|S^*(t) - S(t)\|_1$ between reference and perturbed occupancy fields measures purely geometric divergence.
-
-<p align="center">
-  <img src="figures/fig1.png" width="95%">
-</p>
-
-Fig. 1. (a) Lagrangian ensemble of 100 realizations from near-identical initial conditions. (b-d) The same state projected onto Eulerian grids at 10 m, 50 m, and 100 m resolution.
-
-## The cutoff algorithm is deterministic
-
-The reconnection logic in `meanderpy` contains no stochastic elements:
-
-1. Pairwise Euclidean distances are computed exactly via `scipy.spatial.distance.cdist`. The first pair satisfying $\|x_i - x_j\| < d_c$ in row-major order is selected deterministically.
-
-2. Topological surgery is an exact array splice: `x = np.hstack((x[:i+1], x[j:]))`. No floating-point noise is introduced.
-
-3. Resampling uses `scipy.interpolate.splprep` with `s=0`, forcing the cubic B-spline through every remaining node without smoothing.
-
-Given identical inputs, the algorithm produces identical outputs. The divergence is not a numerical artifact.
+The Hamming distance $d_H(t) = \|S^*(t) - S(t)\|_1$ measures purely geometric divergence, filtering out resampling mechanics.
 
 ## Mechanism: event-driven chaos
 
-The system is a hybrid continuous-discrete dynamical system. The continuous phase (curvature-driven migration) is smooth and non-chaotic. Chaos enters through the discrete phase (cutoffs) via the following cascade:
+The continuous phase (curvature-driven migration) is smooth and non-chaotic on its own. Chaos enters through the discrete phase (cutoffs):
 
-1. Two trajectories separated by $10^{-5}$ m approach a cutoff threshold. Because they differ microscopically, one crosses $\|x_i - x_j\| < d_c$ at timestep $N$; the other misses by a fraction of a millimeter and waits until $N+1$.
+1. Two trajectories separated by $10^{-5}$ m approach a cutoff threshold. One crosses $\|x_i - x_j\| < d_c$ at timestep $N$; the other misses by a fraction of a millimeter and waits until $N+1$.
 
-2. During that one-step delay, the trajectories evolve under different topologies. The first has dropped its oxbow loop; its downstream nodes integrate over a short, straight neck. The second still retains the loop; its downstream nodes integrate over high-curvature geometry via the upstream convolution $\sum R_0[i::-1] \cdot G$.
+2. During that one-step delay, the trajectories evolve under different topologies. The first has dropped its oxbow; its downstream nodes integrate over a short, straight neck via `np.sum(R0[i::-1]*G)`. The second retains the loop; its downstream nodes integrate over high-curvature geometry.
 
-3. For that single timestep, the downstream migration rates differ by $O(1)$, injecting a meter-scale geometric separation.
+3. For that single timestep, downstream migration rates differ by $O(1)$, injecting a meter-scale geometric separation.
 
 4. Once separated by meters, the next cutoff threshold is straddled at an even wider time offset, and the process cascades.
 
-This is the same threshold-reset mechanism that produces chaos in impact oscillators and other hybrid systems. The continuous dynamics provide the stretching; the discrete events provide the folding.
+This is the threshold-reset mechanism found in impact oscillators and other hybrid continuous-discrete systems. The continuous dynamics provide stretching; the discrete events provide folding.
 
 ## Counterfactual experiment
 
-The test is a single binary switch: cutoffs on or off. With cutoffs disabled, the two trajectories remain coincident indefinitely ($d_H = 0$). With cutoffs enabled, $\ln d_H$ grows linearly, yielding a positive finite-time Lyapunov exponent:
+The test is a single binary switch: cutoffs on or off. With cutoffs disabled, paired trajectories remain coincident ($d_H = 0$). With cutoffs enabled, $\ln d_H$ grows linearly, yielding a positive finite-time Lyapunov exponent:
 
 $$\lambda_{\mathrm{FT}} = \frac{1}{t_2 - t_1} \ln\!\left(\frac{d_H(t_2)}{d_H(t_1)}\right)$$
 
-```python
-def get_log_diff(ch1, ch2, cell_size):
-    g1, g2 = raster(ch1), raster(ch2)
-    diff = np.count_nonzero(g1 != g2)
-    return np.log(diff) if diff > 0 else np.nan
-
-log_norms = [get_log_diff(chb_ref.channels[t], chb_pert.channels[t], 50.0)
-             for t in range(NIT)]
-```
-
-<p align="center">
-  <img src="figures/hamming.png" width="80%">
-</p>
-
-The growth rate converges with grid refinement, is insensitive to perturbation magnitude over ten orders of magnitude ($10^{0}$ to $10^{-10}$ m), and persists across Kinoshita planforms with $\theta_0 \in \{0.5, 1.0, 1.5, 2.0\}$. The Lyapunov exponent scales with migration rate $k_\ell$ but is invariant to the cutoff threshold $d_c$, while $d_c$ controls the frequency of topological resets. The predictability horizon, defined as the number of cutoffs per Lyapunov time, saturates at approximately 10 events in the neck-cutoff regime.
+The growth rate converges with grid refinement, is insensitive to perturbation magnitude over ten orders of magnitude ($10^{0}$ to $10^{-10}$ m), and persists across Kinoshita planforms with $\theta_0 \in \{0.5, 1.0, 1.5, 2.0\}$. The Lyapunov exponent scales with migration rate $k_\ell$ but is invariant to the cutoff threshold $d_c$, while $d_c$ controls the frequency of topological resets. The predictability horizon saturates at approximately 10 cutoff events in the neck-cutoff regime.
 
 ## Repository structure
 
 ```
 MeanderChaos/
-├── MeanderChaos_Tutorial.ipynb           # Executable version of the above
+├── MeanderChaos_Tutorial.ipynb           # Executable walkthrough
 ├── scripts/
 │   ├── MeanderChaos_Benettin.py          # Benettin algorithm for Lyapunov exponents
 │   ├── Gridsize_and_Perturbation_Test.py # Resolution and perturbation sensitivity
@@ -97,9 +104,7 @@ MeanderChaos/
     └── codes/                            # Paper figure reproduction scripts
 ```
 
-## Interactive demo
-
-[braydennoh.github.io/chaotic-rivers](https://braydennoh.github.io/chaotic-rivers.html)
+Interactive demo: [braydennoh.github.io/chaotic-rivers](https://braydennoh.github.io/chaotic-rivers.html)
 
 ## Citation
 
