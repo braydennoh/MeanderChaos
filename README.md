@@ -6,7 +6,7 @@ Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition 
 
 The Howard & Knutson (1984) kinematic meander model represents a river as a Lagrangian centerline of $n$ nodes. We use the open-source implementation [meanderpy](https://github.com/zsylvester/meanderpy) by Sylvester et al. (2019). At each timestep, three operations are applied:
 
-Migration. The nominal rate is proportional to dimensionless curvature, $R_0 = k_\ell W \kappa$. The adjusted rate is a weighted sum of upstream curvatures via an exponential convolution kernel $G = e^{-\alpha s}$:
+**Migration.** The nominal rate is proportional to dimensionless curvature, $R_0 = k_\ell W \kappa$. The adjusted rate is a weighted sum of upstream curvatures via an exponential convolution kernel $G = e^{-\alpha s}$:
 
 ```python
 for i in range(pad1, ns-pad):
@@ -17,7 +17,7 @@ for i in range(pad1, ns-pad):
 
 Nodes then move normal to the local tangent: `x += R1 * dy/ds * dt`, `y -= R1 * dx/ds * dt`.
 
-Cutoff detection. A pairwise distance matrix is computed via `scipy.spatial.distance.cdist`. Pairs within the diagonal band (adjacent nodes) are masked. The first pair satisfying $\|x_i - x_j\| < d_c$ in row-major order is selected:
+**Cutoff detection.** A pairwise distance matrix is computed via `scipy.spatial.distance.cdist`. Pairs within the diagonal band (adjacent nodes) are masked. The first pair satisfying $\|x_i - x_j\| < d_c$ in row-major order is selected:
 
 ```python
 dist = distance.cdist(np.array([x,y]).T, np.array([x,y]).T)
@@ -30,14 +30,14 @@ i1, i2 = np.where(~np.isnan(dist))
 
 No random tie-breakers. `np.where` traverses in row-major order deterministically.
 
-Topological surgery. The oxbow is removed by array splicing:
+**Topological surgery.** The oxbow is removed by array splicing:
 
 ```python
 x = np.hstack((x[:ind1[0]+1], x[ind2[0]:]))
 y = np.hstack((y[:ind1[0]+1], y[ind2[0]:]))
 ```
 
-Resampling. After cutoff, the centerline is resampled to uniform spacing using a cubic B-spline with zero smoothing:
+**Resampling.** After cutoff, the centerline is resampled to uniform spacing using a cubic B-spline with zero smoothing:
 
 ```python
 tck, u = scipy.interpolate.splprep([x,y,z], s=0)
