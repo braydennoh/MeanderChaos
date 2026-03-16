@@ -92,7 +92,7 @@ $$\lambda_{\mathrm{FT}} = \frac{1}{t_2 - t_1} \ln\!\left(\frac{d_H(t_2)}{d_H(t_1
 The growth rate converges with grid refinement, is insensitive to perturbation magnitude over ten orders of magnitude ($10^{0}$ to $10^{-10}$ m), and persists across Kinoshita planforms with $\theta_0 \in \{0.5, 1.0, 1.5, 2.0\}$. The Lyapunov exponent scales with migration rate $k_\ell$ but is invariant to the cutoff threshold $d_c$, while $d_c$ controls the frequency of topological resets. The predictability horizon saturates at approximately 10 cutoff events in the neck-cutoff regime.
 
 <p align="center">
-  <img src="figures/fig2.png" width="95%">
+  <img src="figures/fig2.png" width="100%">
 </p>
 
 ## Repository structure
