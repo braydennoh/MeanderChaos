@@ -1,151 +1,105 @@
 # MeanderChaos
 
-**Cutoffs as a sufficient condition for chaos in kinematic river channel evolution**
+Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition for chaos in kinematic river channel evolution. *Communications Earth & Environment*.
 
-Noh, B. & Wani, O. (2026). *Communications Earth & Environment*.
+## The variable-dimensionality problem
 
-## Overview
-
-Rivers shape their floodplains through meander growth and cutoffs, which reorganize channel geometry. We test whether cutoffs alone are sufficient to generate deterministic chaos using a kinematic meander model formulated at fixed spatial resolution.
-
-**Key finding:** Trajectories with cutoffs exhibit sustained exponential divergence, whereas those without cutoffs do not. The inferred Lyapunov exponent converges with grid resolution, is insensitive to perturbation magnitude, and is consistent across diverse initial planforms.
-
-## Usage
-
-This repository uses [`meanderpy`](https://github.com/zsylvester/meanderpy) to simulate river planform evolution from infinitesimally perturbed initial conditions. Each evolving centerline is rasterized onto a fixed Eulerian grid, enabling the computation of Hamming distance between binary occupancy fields as a measure of divergence.
-
-### Requirements
-
-```bash
-pip install numpy matplotlib scipy cmocean meanderpy
-```
-
-### Quick Start
-
-```bash
-jupyter notebook MeanderChaos_Tutorial.ipynb
-```
-
----
-
-### 1. Simulation Setup
-
-We run two deterministic simulations from near-identical initial conditions — a reference and a single-node perturbation ($\delta = 10^{-5}$ m):
+The Howard-Knutson kinematic model represents a river as a Lagrangian centerline of $n$ nodes that migrate normal to the local tangent at a rate determined by curvature and an upstream-weighted convolution. After each migration step, the centerline is resampled to uniform spacing:
 
 ```python
-SECONDS_PER_YEAR = 365.25 * 24 * 3600
-NIT = 1001          # Iterations
-W = 100.0           # Channel width (m)
-MAG = 1e-5          # Perturbation magnitude (m)
-CRDIST = 2 * W      # Cutoff threshold
-
-KL_M_PER_YR = 100.0
-DT_YEARS = 0.1
-
-kl = KL_M_PER_YR / SECONDS_PER_YEAR
-dt = DT_YEARS * SECONDS_PER_YEAR
-
-chb_ref  = run_sim(0.0, CRDIST)   # Reference
-chb_pert = run_sim(MAG, CRDIST)   # Perturbed by 1e-5 m
+unew = np.linspace(0, 1, 1 + int(round(s[-1] / deltas)))
 ```
 
----
+The `round()` means an infinitesimal perturbation in arc length can change $n$ by one. In Lagrangian coordinates, this shifts every node index downstream, injecting a spurious $O(1)$ divergence that has nothing to do with geometry. Any chaos diagnostic built on node-to-node comparison is contaminated by this artifact.
 
-### 2. Lagrangian → Eulerian Transformation
+## Eulerian state representation
 
-Two completely different planforms can have the same sinuosity — so tracking global parameters cannot detect chaos. Instead, we rasterize each Lagrangian centerline onto a fixed Eulerian binary grid, giving a fixed-dimensional state for comparison:
+We sidestep variable dimensionality by projecting the Lagrangian centerline onto a fixed Eulerian binary grid. The state becomes a matrix $S_{k\ell}(t) \in \{0,1\}$ of constant dimension, independent of how many nodes parameterize the curve:
 
 ```python
 def rasterize_channel(ch):
     g = np.zeros((rows, cols), dtype=bool)
-
-    # Densify polyline segments so thin lines don't skip cells
     xs = np.linspace(ch.x[:-1], ch.x[1:], 10)
     ys = np.linspace(ch.y[:-1], ch.y[1:], 10)
-
     col_idx = ((xs - xmin) / cell_size).astype(int)
     row_idx = ((ys - ymin) / cell_size).astype(int)
-
     mask = (0 <= col_idx) & (col_idx < cols) & (0 <= row_idx) & (row_idx < rows)
     g[row_idx[mask], col_idx[mask]] = True
     return g
-
-G1 = rasterize_channel(chb_ref.channels[t_idx])   # Reference occupancy
-G2 = rasterize_channel(chb_pert.channels[t_idx])   # Perturbed occupancy
 ```
 
+A curve with 1000 nodes and the same curve with 1001 nodes occupy identical grid cells. The Hamming distance $d_H(t) = \|S^*(t) - S(t)\|_1$ between reference and perturbed occupancy fields measures purely geometric divergence.
+
 <p align="center">
-  <img src="figures/fig1.png" width="95%" alt="Lagrangian and Eulerian representations">
+  <img src="figures/fig1.png" width="95%">
 </p>
 
-> **Fig. 1.** Lagrangian ensemble of 100 realizations (a), and Eulerian representation on grids with resolutions of 10 m (b), 50 m (c), and 100 m (d).
+Fig. 1. (a) Lagrangian ensemble of 100 realizations from near-identical initial conditions. (b-d) The same state projected onto Eulerian grids at 10 m, 50 m, and 100 m resolution.
 
----
+## The cutoff algorithm is deterministic
 
-### 3. Hamming Distance
+The reconnection logic in `meanderpy` contains no stochastic elements:
 
-Divergence is measured via the Hamming distance between occupancy fields:
+1. Pairwise Euclidean distances are computed exactly via `scipy.spatial.distance.cdist`. The first pair satisfying $\|x_i - x_j\| < d_c$ in row-major order is selected deterministically.
 
-$$d_H(t) = \sum_{i,j} \left| G_{\text{ref}}(t)_{i,j} - G_{\text{pert}}(t)_{i,j} \right|$$
+2. Topological surgery is an exact array splice: `x = np.hstack((x[:i+1], x[j:]))`. No floating-point noise is introduced.
+
+3. Resampling uses `scipy.interpolate.splprep` with `s=0`, forcing the cubic B-spline through every remaining node without smoothing.
+
+Given identical inputs, the algorithm produces identical outputs. The divergence is not a numerical artifact.
+
+## Mechanism: event-driven chaos
+
+The system is a hybrid continuous-discrete dynamical system. The continuous phase (curvature-driven migration) is smooth and non-chaotic. Chaos enters through the discrete phase (cutoffs) via the following cascade:
+
+1. Two trajectories separated by $10^{-5}$ m approach a cutoff threshold. Because they differ microscopically, one crosses $\|x_i - x_j\| < d_c$ at timestep $N$; the other misses by a fraction of a millimeter and waits until $N+1$.
+
+2. During that one-step delay, the trajectories evolve under different topologies. The first has dropped its oxbow loop; its downstream nodes integrate over a short, straight neck. The second still retains the loop; its downstream nodes integrate over high-curvature geometry via the upstream convolution $\sum R_0[i::-1] \cdot G$.
+
+3. For that single timestep, the downstream migration rates differ by $O(1)$, injecting a meter-scale geometric separation.
+
+4. Once separated by meters, the next cutoff threshold is straddled at an even wider time offset, and the process cascades.
+
+This is the same threshold-reset mechanism that produces chaos in impact oscillators and other hybrid systems. The continuous dynamics provide the stretching; the discrete events provide the folding.
+
+## Counterfactual experiment
+
+The test is a single binary switch: cutoffs on or off. With cutoffs disabled, the two trajectories remain coincident indefinitely ($d_H = 0$). With cutoffs enabled, $\ln d_H$ grows linearly, yielding a positive finite-time Lyapunov exponent:
+
+$$\lambda_{\mathrm{FT}} = \frac{1}{t_2 - t_1} \ln\!\left(\frac{d_H(t_2)}{d_H(t_1)}\right)$$
 
 ```python
 def get_log_diff(ch1, ch2, cell_size):
-    g1 = raster(ch1)
-    g2 = raster(ch2)
+    g1, g2 = raster(ch1), raster(ch2)
     diff = np.count_nonzero(g1 != g2)
     return np.log(diff) if diff > 0 else np.nan
 
-log_norms = np.array([
-    get_log_diff(chb_ref.channels[t], chb_pert.channels[t], cell_size=50.0)
-    for t in range(0, NIT, 1)
-])
+log_norms = [get_log_diff(chb_ref.channels[t], chb_pert.channels[t], 50.0)
+             for t in range(NIT)]
 ```
 
-A linear trend in $\log(d_H)$ indicates exponential growth of the initial perturbation — the signature of deterministic chaos.
-
 <p align="center">
-  <img src="figures/hamming.png" width="80%" alt="Hamming distance divergence">
+  <img src="figures/hamming.png" width="80%">
 </p>
 
-The finite-time Lyapunov exponent is estimated from the linear growth window:
+The growth rate converges with grid refinement, is insensitive to perturbation magnitude over ten orders of magnitude ($10^{0}$ to $10^{-10}$ m), and persists across Kinoshita planforms with $\theta_0 \in \{0.5, 1.0, 1.5, 2.0\}$. The Lyapunov exponent scales with migration rate $k_\ell$ but is invariant to the cutoff threshold $d_c$, while $d_c$ controls the frequency of topological resets. The predictability horizon, defined as the number of cutoffs per Lyapunov time, saturates at approximately 10 events in the neck-cutoff regime.
 
-$$\lambda_{\mathrm{FT}}(t_1,t_2) = \frac{1}{t_2 - t_1} \ln\!\left(\frac{d_H(t_2)}{d_H(t_1)}\right)$$
-
----
-
-## Repository Structure
+## Repository structure
 
 ```
 MeanderChaos/
-├── README.md
-├── MeanderChaos_Tutorial.ipynb        # Interactive tutorial (start here)
+├── MeanderChaos_Tutorial.ipynb           # Executable version of the above
 ├── scripts/
-│   ├── MeanderChaos_Benettin.py       # Benettin algorithm for Lyapunov exponents
-│   ├── Gridsize_and_Perturbation_Test.py   # Grid resolution & perturbation sensitivity
-│   └── Recurrence_Plot.py             # Recurrence quantification analysis
+│   ├── MeanderChaos_Benettin.py          # Benettin algorithm for Lyapunov exponents
+│   ├── Gridsize_and_Perturbation_Test.py # Resolution and perturbation sensitivity
+│   └── Recurrence_Plot.py               # Recurrence quantification analysis
 └── figures/
-    ├── codes/                         # Scripts to reproduce paper figures
-    │   ├── figure1code.py
-    │   ├── figure2code.py
-    │   ├── figure3code.py
-    │   ├── figure4code.py
-    │   └── figure5code.py
-    ├── fig1.png
-    └── hamming.png
+    └── codes/                            # Paper figure reproduction scripts
 ```
 
-## Scripts
+## Interactive demo
 
-| Script | Description |
-|--------|-------------|
-| `scripts/MeanderChaos_Benettin.py` | Benettin algorithm for Lyapunov exponents on the Eulerian grid |
-| `scripts/Gridsize_and_Perturbation_Test.py` | Sensitivity analysis: grid cell size and perturbation magnitude |
-| `scripts/Recurrence_Plot.py` | Recurrence quantification analysis of planform evolution |
-| `figures/codes/figure[1-5]code.py` | Reproduction scripts for each paper figure |
-
-## Interactive Demo
-
-**[braydennoh.github.io/chaotic-rivers](https://braydennoh.github.io/chaotic-rivers.html)**
+[braydennoh.github.io/chaotic-rivers](https://braydennoh.github.io/chaotic-rivers.html)
 
 ## Citation
 
@@ -159,7 +113,3 @@ MeanderChaos/
   publisher = {Nature Publishing Group}
 }
 ```
-
-## License
-
-MIT
