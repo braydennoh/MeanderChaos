@@ -1,6 +1,6 @@
 # MeanderChaos
 
-Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition for chaos in kinematic river channel evolution. *Communications Earth & Environment*.
+Code and data for: Noh, B. & Wani, O. (2026). [Cutoffs as a sufficient condition for chaos in kinematic river channel evolution](https://www.nature.com/articles/s43247-026-03370-w). *Communications Earth & Environment*.
 
 <p align="center">
   <img src="figures/ensemble.png" width="100%">
