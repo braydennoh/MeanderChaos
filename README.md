@@ -4,7 +4,7 @@ Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition 
 
 ## The model
 
-[meanderpy](https://github.com/zsylvester/meanderpy) implements the Howard & Knutson (1984) kinematic meander model. At each timestep, three operations are applied to a Lagrangian centerline of $n$ nodes:
+The Howard & Knutson (1984) kinematic meander model represents a river as a Lagrangian centerline of $n$ nodes. We use the open-source implementation [meanderpy](https://github.com/zsylvester/meanderpy) by Sylvester et al. (2019). At each timestep, three operations are applied:
 
 Migration. The nominal rate is proportional to dimensionless curvature, $R_0 = k_\ell W \kappa$. The adjusted rate is a weighted sum of upstream curvatures via an exponential convolution kernel $G = e^{-\alpha s}$:
 
@@ -49,7 +49,7 @@ The `s=0` forces exact interpolation. The `round()` in the node count means an i
 
 ## The variable-dimensionality problem
 
-In Lagrangian coordinates, comparing two centerlines node-by-node is meaningless when they have different $n$. Even when $n$ happens to match, the resampling-induced index shift creates $O(1)$ spurious divergence that has nothing to do with geometry. Any chaos diagnostic built on $\|x^*_i - x_i\|$ is contaminated by this artifact.
+In Lagrangian coordinates, comparing two centerlines node-by-node is meaningless when they have different $n$. Even when $n$ happens to match, the resampling-induced index shift creates $O(1)$ spurious divergence unrelated to geometry. This motivates a fixed-dimensional state representation.
 
 ## Eulerian state representation
 
