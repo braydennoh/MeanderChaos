@@ -1,41 +1,103 @@
 # MeanderChaos
 
-Deterministic chaos in curvature-driven river meander models. Code and data for Noh et al. (in review).
+**Cutoffs as a sufficient condition for chaos in kinematic river channel evolution**
+
+Noh, B. & Wani, O. (2025). *Communications Earth & Environment*.
 
 <p align="center">
-  <img src="figures/meander_evolution.gif" width="80%" alt="Meander evolution">
+  <img src="figures/ensemble.png" width="90%" alt="Ensemble of diverging river planforms">
 </p>
 
-## Overview
+> *Ensemble of 100 simulations initialized from near-identical conditions. With cutoffs enabled, planforms diverge exponentially.*
 
-River meanders evolve through smooth curvature-driven migration punctuated by abrupt cutoff events that reorganize planform topology. Within a fully deterministic kinematic model, we show that cutoff events alone are sufficient to generate sensitive dependence on initial conditions -- sustained exponential divergence from infinitesimal perturbations -- when all other sources of stochasticity are excluded.
+## The Problem
 
-We quantify this divergence by rasterizing paired simulations onto a fixed Eulerian grid and computing the Hamming distance between binary occupancy fields over time.
+Lowland rivers evolve through gradual curvature-driven migration punctuated by abrupt cutoff events that reorganize planform topology. We ask: **are cutoffs alone sufficient to make river evolution chaotic?**
+
+Two completely different planforms can have the same sinuosity -- so tracking global parameters like sinuosity cannot detect chaos. Instead, we map each centerline onto a **fixed Eulerian grid** of binary cells (channel or floodplain), giving a fixed-dimensional state for comparison.
+
+## Key Result
+
+**When cutoffs are disabled, two nearly identical rivers stay identical forever. When cutoffs are enabled, they diverge exponentially.**
+
+<p align="center">
+  <img src="figures/lagrangian.png" width="90%" alt="Lagrangian centerline evolution">
+</p>
+
+The finite-time Lyapunov exponent converges with grid refinement, remains independent of initial perturbation size, and appears consistent across different river shapes.
+
+## Method
+
+### 1. Paired Simulations
+
+Two simulations are initialized from identical sine-generated curves, differing by a single-node perturbation of magnitude $\delta = 10^{-5}$ m. Both are evolved using the deterministic Howard--Knutson (1984) curvature-driven migration model via [`meanderpy`](https://github.com/zsylvester/meanderpy).
+
+### 2. Eulerian Rasterization
+
+Since Lagrangian node positions drift independently, direct coordinate comparison is meaningless. Each centerline is rasterized onto a fixed binary occupancy grid:
+
+$$G_{i,j}(t) = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \text{ at time } t \\\\ 0 & \text{otherwise} \end{cases}$$
+
+<p align="center">
+  <img src="figures/eulerian.png" width="80%" alt="Eulerian grid comparison">
+</p>
+
+> *Purple: agreement between reference and perturbed runs. Red/blue: spatial divergence.*
+
+### 3. Hamming Distance
+
+Divergence is measured via the Hamming distance between occupancy fields:
+
+$$d_H(t) = \sum_{i,j} \left| G_{\text{ref}}(t)_{i,j} - G_{\text{pert}}(t)_{i,j} \right|$$
+
+A linear trend in $\log(d_H)$ indicates exponential growth of the initial perturbation.
+
+<p align="center">
+  <img src="figures/hamming.png" width="80%" alt="Hamming distance divergence">
+</p>
+
+### 4. Lyapunov Exponent
+
+The maximum Lyapunov exponent is estimated via the Benettin algorithm on the Eulerian grid, confirming positive exponents **only** when cutoffs are enabled.
+
+<p align="center">
+  <img src="figures/PNAS_Supp.gif" width="80%" alt="Supplementary animation">
+</p>
 
 ## Repository Structure
 
 ```
 MeanderChaos/
 ├── README.md
-├── MeanderChaos_Tutorial.ipynb      # Interactive tutorial (start here)
+├── MeanderChaos_Tutorial.ipynb        # Interactive tutorial (start here)
 ├── scripts/
-│   ├── MeanderChaos_Benettin.py     # Benettin algorithm for Lyapunov exponents
-│   ├── Gridsize_and_Perturbation_Test.py  # Grid resolution & perturbation sensitivity
-│   └── Recurrence_Plot.py           # Recurrence quantification analysis
-├── figures/
-│   ├── codes/                       # Scripts to reproduce paper figures
-│   │   ├── figure1code.py
-│   │   ├── figure2code.py
-│   │   ├── figure3code.py
-│   │   ├── figure4code.py
-│   │   └── figure5code.py
-│   ├── lagrangian.png
-│   ├── eulerian.png
-│   ├── hamming.png
-│   ├── meander_evolution.gif
-│   ├── PNAS_Supp.gif
-│   └── PNAS_Supp.mp4
+│   ├── MeanderChaos_Benettin.py       # Benettin algorithm for Lyapunov exponents
+│   ├── Gridsize_and_Perturbation_Test.py   # Grid resolution & perturbation sensitivity
+│   └── Recurrence_Plot.py             # Recurrence quantification analysis
+└── figures/
+    ├── codes/                         # Scripts to reproduce paper figures
+    │   ├── figure1code.py
+    │   ├── figure2code.py
+    │   ├── figure3code.py
+    │   ├── figure4code.py
+    │   └── figure5code.py
+    ├── ensemble.png
+    ├── lagrangian.png
+    ├── eulerian.png
+    ├── hamming.png
+    ├── meander_evolution.gif
+    ├── PNAS_Supp.gif
+    └── PNAS_Supp.mp4
 ```
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `scripts/MeanderChaos_Benettin.py` | Benettin algorithm for Lyapunov exponents on the Eulerian grid |
+| `scripts/Gridsize_and_Perturbation_Test.py` | Sensitivity analysis: grid cell size and perturbation magnitude |
+| `scripts/Recurrence_Plot.py` | Recurrence quantification analysis of meander planform evolution |
+| `figures/codes/figure[1-5]code.py` | Reproduction scripts for each paper figure |
 
 ## Getting Started
 
@@ -49,11 +111,8 @@ meanderpy
 cmocean
 ```
 
-Install dependencies:
-
 ```bash
-pip install numpy matplotlib scipy cmocean
-pip install meanderpy
+pip install numpy matplotlib scipy cmocean meanderpy
 ```
 
 ### Quick Start
@@ -70,69 +129,21 @@ Or run the Lyapunov exponent computation directly:
 python scripts/MeanderChaos_Benettin.py
 ```
 
-## Method
+## Interactive Demo
 
-### 1. Paired Simulations
+An interactive Eulerian occupancy heatmap with adjustable grid resolution is available at:
 
-Two simulations are initialized from identical sine-generated curves, differing by a single-node perturbation of magnitude $\delta = 10^{-5}$ m:
-
-```python
-# Reference run
-chb_ref = run_sim(pert=0.0, crdist=2*W)
-
-# Perturbed run (one node shifted by 1e-5 m)
-chb_pert = run_sim(pert=1e-5, crdist=2*W)
-```
-
-### 2. Eulerian Rasterization
-
-Since Lagrangian node positions drift independently, direct coordinate comparison is meaningless. Instead, each centerline is rasterized onto a fixed binary occupancy grid:
-
-$$G_{i,j}(t) = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \text{ at time } t \\ 0 & \text{otherwise} \end{cases}$$
-
-<p align="center">
-  <img src="figures/eulerian.png" width="80%" alt="Eulerian grid comparison">
-</p>
-
-### 3. Hamming Distance
-
-Divergence is measured via the Hamming distance between the two occupancy fields:
-
-$$d_H(t) = \sum_{i,j} \left| G_{\text{ref}}(t)_{i,j} - G_{\text{pert}}(t)_{i,j} \right|$$
-
-A linear trend in $\log(d_H)$ indicates exponential growth of the initial perturbation.
-
-<p align="center">
-  <img src="figures/hamming.png" width="80%" alt="Hamming distance divergence">
-</p>
-
-### 4. Lyapunov Exponent
-
-The maximum Lyapunov exponent is estimated via the Benettin algorithm (`scripts/MeanderChaos_Benettin.py`), confirming positive exponents only when cutoffs are enabled.
-
-## Key Result
-
-By comparing paired simulations with cutoffs enabled vs. disabled, we show that **only cutoff-enabled runs develop sustained exponential divergence**. Cutoffs act as the topological mechanism that amplifies infinitesimal perturbations into macroscopic planform differences.
-
-<p align="center">
-  <img src="figures/PNAS_Supp.gif" width="80%" alt="Supplementary animation">
-</p>
-
-## Scripts
-
-| Script | Description |
-|--------|-------------|
-| `scripts/MeanderChaos_Benettin.py` | Benettin algorithm for computing Lyapunov exponents on the Eulerian grid |
-| `scripts/Gridsize_and_Perturbation_Test.py` | Sensitivity analysis: grid cell size and perturbation magnitude |
-| `scripts/Recurrence_Plot.py` | Recurrence quantification analysis of meander planform evolution |
-| `figures/codes/figure[1-5]code.py` | Reproduction scripts for each paper figure |
+**[braydennoh.github.io/chaotic-rivers](https://braydennoh.github.io/chaotic-rivers.html)**
 
 ## Citation
 
-If you use this code, please cite:
-
-```
-Noh, B., et al. (in review). [Title]. [Journal].
+```bibtex
+@article{noh2025cutoffs,
+  title={Cutoffs as a sufficient condition for chaos in kinematic river channel evolution},
+  author={Noh, Brayden and Wani, Omar},
+  journal={Communications Earth \& Environment},
+  year={2025}
+}
 ```
 
 ## License
