@@ -2,6 +2,10 @@
 
 Code and data for: Noh, B. & Wani, O. (2026). Cutoffs as a sufficient condition for chaos in kinematic river channel evolution. *Communications Earth & Environment*.
 
+<p align="center">
+  <img src="figures/ensemble.png" width="100%">
+</p>
+
 ## The model
 
 The Howard & Knutson (1984) kinematic meander model represents a river as a Lagrangian centerline of $n$ nodes. We use the open-source implementation [meanderpy](https://github.com/zsylvester/meanderpy) by Sylvester et al. (2019). At each timestep, three operations are applied:
