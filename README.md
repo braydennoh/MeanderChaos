@@ -21,7 +21,7 @@ Two completely different planforms can have the same sinuosity -- so tracking gl
 **When cutoffs are disabled, two nearly identical rivers stay identical forever. When cutoffs are enabled, they diverge exponentially.**
 
 <p align="center">
-  <img src="figures/lagrangian.png" width="90%" alt="Lagrangian centerline evolution">
+  <img src="figures/PNAS_Supp.gif" width="90%" alt="Supplementary animation">
 </p>
 
 The finite-time Lyapunov exponent converges with grid refinement, remains independent of initial perturbation size, and appears consistent across different river shapes.
@@ -59,10 +59,6 @@ A linear trend in $\log(d_H)$ indicates exponential growth of the initial pertur
 ### 4. Lyapunov Exponent
 
 The maximum Lyapunov exponent is estimated via the Benettin algorithm on the Eulerian grid, confirming positive exponents **only** when cutoffs are enabled.
-
-<p align="center">
-  <img src="figures/PNAS_Supp.gif" width="80%" alt="Supplementary animation">
-</p>
 
 ## Repository Structure
 
