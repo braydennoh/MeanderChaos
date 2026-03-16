@@ -1,204 +1,140 @@
 # MeanderChaos
 
-![Gif](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/1.gif)
-
-River meanders evolve through smooth curvature-driven migration punctuated by abrupt cutoff events that reorganize planform topology. Within a fully deterministic kinematic model, we ask whether these cutoff events alone are sufficient to generate sensitive dependence on initial conditions—manifested as sustained exponential divergence—when all other sources of stochasticity and physical complexity are excluded. 
-
-## Usage
-This repository uses [`meanderpy`](https://github.com/zsylvester/meanderpy) to simulate river planform evolution from infinitesimally perturbed initial conditions. Each evolving centerline is rasterized onto a fixed Eulerian grid, enabling the computation of Hamming distance between binary occupancy fields as a measure of divergence.
-
-
-
-### Dependencies
-
-Ensure you have the following libraries installed:
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-import meanderpy as mp
-import cmocean
-```
-
------
-
-### 1\. Simulation Setup
-
-We define the physical constants governing the river migration. The simulation uses a constant flow depth and friction factor. The migration rate is determined by the lateral migration scale $k_l$ and vertical scale $k_v$.
-
-  * **Grid Resolution:** $\Delta t = 0.1$ years
-  * **Migration Rate ($k_l$):** $100$ m/yr
-  * **Perturbation Magnitude:** $10^{-5}$ m
-
-<!-- end list -->
-
-```python
-SECONDS_PER_YEAR = 365.25 * 24 * 3600
-NIT = 1001          # Iterations
-W = 100.0           # Channel width (m)
-MAG = 1e-5          # Perturbation magnitude (m)
-CRDIST = 2 * W      # Cutoff threshold
-
-# Migration parameters
-KL_M_PER_YR = 100.0
-KV_M_PER_YR = 3.16e-5
-DT_YEARS = 0.1
-
-# SI Unit Conversion
-kl = KL_M_PER_YR / SECONDS_PER_YEAR
-kv = KV_M_PER_YR / SECONDS_PER_YEAR
-dt = DT_YEARS * SECONDS_PER_YEAR
-```
-
------
-
-### 2\. Running the Simulation
-
-The `run_sim` function initializes a sine-generated curve parameterized by the angle $\theta(s)$:
-
-$$
-\theta(s) = \theta_0 \sin\left(\frac{2\pi s}{\lambda}\right)
-$$
-
-We run two instances:
-
-1.  **Reference:** Standard initial conditions.
-2.  **Perturbed:** A single-node offset ($y + \delta$) applied at initialization.
-
-<!-- end list -->
-
-```python
-def run_sim(pert, crdist):
-    # Initialize centerline geometry
-    theta0 = 1.5
-    n_nodes = 1000
-    total_length = 10000.0
-    lamb = 500.0
-    s = np.linspace(0.0, total_length, n_nodes)
-    
-    # Generate initial theta and integration for (x,y)
-    base_angle = 0.0
-    theta = theta0 * np.sin(2.0 * np.pi * s / lamb) + base_angle
-    x = np.zeros_like(s)
-    y = np.zeros_like(s)
-    
-    for i in range(1, n_nodes):
-        ds = s[i] - s[i - 1]
-        x[i] = x[i - 1] + ds * np.cos(theta[i])
-        y[i] = y[i - 1] + ds * np.sin(theta[i])
-
-    # Apply perturbation
-    if pert != 0.0:
-        mid = len(x) // 2
-        y[mid] += pert
-
-    # Initialize MeanderPy objects
-    z = np.zeros_like(x)
-    ch = mp.Channel(x, y, z, W, 1.0)
-    chb = mp.ChannelBelt([ch], [], [0.0], [])
-    
-    # Run migration
-    chb.migrate(NIT, 1, 50.0, 0, crdist, np.ones(NIT), 
-                0.0065 * np.ones(NIT), kl, kv, dt, 1000, 0, 0, 0, 0.0)
-    return chb
-
-# Execute Simulations
-chb_ref = run_sim(0.0, CRDIST)
-chb_pert = run_sim(MAG, CRDIST)
-```
-
-#### Visualizing Channel Evolution
-
-We visualize the temporal evolution of the channel centerline. The red line indicates the final state of the unperturbed channel.
+Deterministic chaos in curvature-driven river meander models. Code and data for Noh et al. (in review).
 
 <p align="center">
-  <img src="Supplement/lagrangian.png" width="100%" alt="Lagrangian">
+  <img src="figures/meander_evolution.gif" width="80%" alt="Meander evolution">
 </p>
 
------
+## Overview
 
-### 3. Eulerian Grid Analysis
+River meanders evolve through smooth curvature-driven migration punctuated by abrupt cutoff events that reorganize planform topology. Within a fully deterministic kinematic model, we show that cutoff events alone are sufficient to generate sensitive dependence on initial conditions -- sustained exponential divergence from infinitesimal perturbations -- when all other sources of stochasticity are excluded.
 
-To quantify the difference between the Reference and Perturbed channels, we cannot simply subtract coordinate vectors because the nodes drift independently. Instead, we rasterize the channels onto a fixed Eulerian grid.
+We quantify this divergence by rasterizing paired simulations onto a fixed Eulerian grid and computing the Hamming distance between binary occupancy fields over time.
 
-We define a binary occupancy grid $G(x,y)$ where:
+## Repository Structure
 
-$$
-G_{i,j} = \begin{cases} 
-1 & \text{if channel occupies cell } (i,j) \\ 
-0 & \text{otherwise} 
-\end{cases}
-$$
-
-```python
-def rasterize_channel(ch, rows, cols, xmin, ymin, cell_size):
-    g = np.zeros((rows, cols), dtype=bool)
-    
-    # Densify polyline to ensure continuity on grid
-    xs = np.linspace(ch.x[:-1], ch.x[1:], 10)
-    ys = np.linspace(ch.y[:-1], ch.y[1:], 10)
-    
-    col_idx = ((xs - xmin) / cell_size).astype(int)
-    row_idx = ((ys - ymin) / cell_size).astype(int)
-    
-    mask = (0 <= col_idx) & (col_idx < cols) & (0 <= row_idx) & (row_idx < rows)
-    g[row_idx[mask], col_idx[mask]] = True
-    return g
-
-# Example comparison at t=400
-t_idx = 400
-G1 = rasterize_channel(chb_ref.channels[t_idx], ...)
-G2 = rasterize_channel(chb_pert.channels[t_idx], ...)
+```
+MeanderChaos/
+├── README.md
+├── MeanderChaos_Tutorial.ipynb      # Interactive tutorial (start here)
+├── scripts/
+│   ├── MeanderChaos_Benettin.py     # Benettin algorithm for Lyapunov exponents
+│   ├── Gridsize_and_Perturbation_Test.py  # Grid resolution & perturbation sensitivity
+│   └── Recurrence_Plot.py           # Recurrence quantification analysis
+├── figures/
+│   ├── codes/                       # Scripts to reproduce paper figures
+│   │   ├── figure1code.py
+│   │   ├── figure2code.py
+│   │   ├── figure3code.py
+│   │   ├── figure4code.py
+│   │   └── figure5code.py
+│   ├── lagrangian.png
+│   ├── eulerian.png
+│   ├── hamming.png
+│   ├── meander_evolution.gif
+│   ├── PNAS_Supp.gif
+│   └── PNAS_Supp.mp4
 ```
 
-#### Spatial Overlap Visualization
+## Getting Started
 
-The figure below demonstrates the overlap. Purple cells indicates agreement, while red and blue cells indicate the spatial divergence of the two simulations.
+### Requirements
 
-<p align="center">
-  <img src="Supplement/eulerian.png" width="100%" alt="Eulerian">
-</p>
-
------
-
-### 4\. Hamming Distance Quantification
-
-We measure the error growth using the Hamming Distance ($d_H$), defined as the count of grid cells where the occupancy states differ:
-
-$$
-d_H(t) = \sum_{i,j} | G_{ref}(t)_{i,j} - G_{pert}(t)_{i,j} |
-$$
-
-The code calculates $\log(d_H)$ to analyze the exponential divergence typical of chaotic systems.
-
-```python
-def get_log_diff(ch1, ch2, cell_size):
-    # (Setup grid bounds code omitted for brevity...)
-    
-    # Rasterize both channels
-    g1 = raster(ch1)
-    g2 = raster(ch2)
-
-    # Compute Hamming distance
-    diff = np.count_nonzero(g1 != g2)
-    return np.log(diff) if diff > 0 else np.nan
-
-# Compute over time
-log_norms = np.array([
-    get_log_diff(chb_ref.channels[t], chb_pert.channels[t], cell_size=50.0)
-    for t in range(0, NIT, 1)
-])
+```
+numpy
+matplotlib
+scipy
+meanderpy
+cmocean
 ```
 
-#### Divergence Plot
+Install dependencies:
 
-The plot below shows the Log-Hamming distance over time. A linear trend in this semi-log plot would suggest exponential growth of the initial perturbation.
+```bash
+pip install numpy matplotlib scipy cmocean
+pip install meanderpy
+```
+
+### Quick Start
+
+Open the interactive tutorial:
+
+```bash
+jupyter notebook MeanderChaos_Tutorial.ipynb
+```
+
+Or run the Lyapunov exponent computation directly:
+
+```bash
+python scripts/MeanderChaos_Benettin.py
+```
+
+## Method
+
+### 1. Paired Simulations
+
+Two simulations are initialized from identical sine-generated curves, differing by a single-node perturbation of magnitude $\delta = 10^{-5}$ m:
+
+```python
+# Reference run
+chb_ref = run_sim(pert=0.0, crdist=2*W)
+
+# Perturbed run (one node shifted by 1e-5 m)
+chb_pert = run_sim(pert=1e-5, crdist=2*W)
+```
+
+### 2. Eulerian Rasterization
+
+Since Lagrangian node positions drift independently, direct coordinate comparison is meaningless. Instead, each centerline is rasterized onto a fixed binary occupancy grid:
+
+$$G_{i,j}(t) = \begin{cases} 1 & \text{if channel occupies cell } (i,j) \text{ at time } t \\ 0 & \text{otherwise} \end{cases}$$
 
 <p align="center">
-  <img src="Supplement/hamming.png" width="100%" alt="Hamming">
+  <img src="figures/eulerian.png" width="80%" alt="Eulerian grid comparison">
 </p>
 
-![PNAS Supplementary Animation](https://github.com/braydennoh/MeanderChaos/blob/main/Supplement/PNAS_Supp.gif)
+### 3. Hamming Distance
 
-By comparing paired simulations with identical settings—once with cutoffs enabled and once with cutoffs disabled—we show that only the cutoff-enabled runs develop sustained exponential divergence on a fixed-dimension Eulerian grid. Just add the equation for the Lyapunov on the Eulerian grid.
+Divergence is measured via the Hamming distance between the two occupancy fields:
 
+$$d_H(t) = \sum_{i,j} \left| G_{\text{ref}}(t)_{i,j} - G_{\text{pert}}(t)_{i,j} \right|$$
+
+A linear trend in $\log(d_H)$ indicates exponential growth of the initial perturbation.
+
+<p align="center">
+  <img src="figures/hamming.png" width="80%" alt="Hamming distance divergence">
+</p>
+
+### 4. Lyapunov Exponent
+
+The maximum Lyapunov exponent is estimated via the Benettin algorithm (`scripts/MeanderChaos_Benettin.py`), confirming positive exponents only when cutoffs are enabled.
+
+## Key Result
+
+By comparing paired simulations with cutoffs enabled vs. disabled, we show that **only cutoff-enabled runs develop sustained exponential divergence**. Cutoffs act as the topological mechanism that amplifies infinitesimal perturbations into macroscopic planform differences.
+
+<p align="center">
+  <img src="figures/PNAS_Supp.gif" width="80%" alt="Supplementary animation">
+</p>
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `scripts/MeanderChaos_Benettin.py` | Benettin algorithm for computing Lyapunov exponents on the Eulerian grid |
+| `scripts/Gridsize_and_Perturbation_Test.py` | Sensitivity analysis: grid cell size and perturbation magnitude |
+| `scripts/Recurrence_Plot.py` | Recurrence quantification analysis of meander planform evolution |
+| `figures/codes/figure[1-5]code.py` | Reproduction scripts for each paper figure |
+
+## Citation
+
+If you use this code, please cite:
+
+```
+Noh, B., et al. (in review). [Title]. [Journal].
+```
+
+## License
+
+MIT
